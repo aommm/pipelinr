@@ -13,7 +13,7 @@ request = bb.promisify(request, {multiArgs: true});
 const curry = require('./transformations/utils').curry;
 const HtmlEvaluator = require('./lib').HtmlEvaluator;
 
-return co(function*() {
+co(function*() {
 
     // -----------------------------------
     // One-to-one transformations (a -> b)
