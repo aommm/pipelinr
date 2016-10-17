@@ -29,12 +29,14 @@ function curry(fx) {
             copyProps(f1, f2); // if properties are set AFTER curry() call
             copyProps(fx, f2); // if properties are set BEFORE curry() call
             setToString(f2, fx + ''); // save original function string
+            Object.defineProperty(f2, 'name', {value: fx.name});
             return f2;
         }
     }
     f1.appliedArgs = [];
     copyProps(fx, f1); // copy e.g. 'manyToOne'
     setToString(f1, fx + ''); // save original function string
+    Object.defineProperty(f1, 'name', {value: fx.name});
     return f1;
 }
 

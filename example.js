@@ -10,8 +10,10 @@ const bb = require('bluebird');
 let request = require('request');
 request = bb.promisify(request, {multiArgs: true});
 
+const {required} = require('./transformations/control-flow');
 const curry = require('./transformations/utils').curry;
 const HtmlEvaluator = require('./lib').HtmlEvaluator;
+const NoValueError = require('./lib/error').NoValueError;
 
 co(function*() {
 
@@ -19,12 +21,21 @@ co(function*() {
     // One-to-one transformations (a -> b)
 
     // Some string transformations
-    const trim = (x) => x.trim();
-    const toLowerCase = (x) => x.toLowerCase();
-    const toUpperCase = (x) => x.toUpperCase();
+    function trim (x) {
+        return x.trim();
+    }
+    function toLowerCase (x) {
+        return x.toLowerCase();
+    }
+    function toUpperCase (x) {
+        return x.toUpperCase();
+    }
 
     // Transformations can be provided with "options" (== multiple arguments)
-    let defaultValue = (def, x) => _.isUndefined(x) ? def : x;
+    function defaultValue (def, x) {
+        return x instanceof NoValueError ? def : x;
+    }
+    defaultValue.acceptsErrors = true;
     defaultValue = curry(defaultValue);
 
     // defaultValue is now a generic transformer, that we configure by calling. E.g.:
@@ -40,7 +51,9 @@ co(function*() {
     const concat = (xs) => xs.join('');
     concat.manyToOne = true;
 
-    let join = (sep, xs) => xs.join(sep); // Many-to-one AND generic
+    function join (sep, xs) { // Many-to-one AND generic
+        return xs.join(sep);
+    }
     join.manyToOne = true;
     join = curry(join);
 
@@ -56,8 +69,9 @@ co(function*() {
         'brokenSelector',
         [toLowerCase, toUpperCase, toUpperCase],
         trim,
-        defaultValue("I am a default value"),
-        join('\n')
+        // defaultValue("I am a default value"), // remove this to see stacktrace in action
+        join('\n'),
+        required
     ];
 
     const [response, body] = yield request('https://news.ycombinator.com/');
@@ -65,6 +79,6 @@ co(function*() {
     const res = htmlEvaluator.eval(transformations);
     console.log("result from evaluating pipeline:\n", res);
 }).catch(function(x) {
-    console.error('err', x);
+    console.error('err', x.stack);
 });
 
