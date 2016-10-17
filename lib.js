@@ -5,7 +5,6 @@
  */
 
 const _ = require('lodash');
-const cheerio = require('cheerio');
 
 class Evaluator {
     constructor(data) {
@@ -80,10 +79,12 @@ class Evaluator {
 class HtmlEvaluator extends Evaluator {
     constructor(data) {
         super(data);
-        this.$ = cheerio.load(data);
+        if (!_.isFunction(data)) {
+            throw new Error("HtmlEvaluator: data must be cheerio document");
+        }
     }
     get(selector) {
-        const el = this.$(selector);
+        const el = this.data(selector);
         if (el && el.length) {
             return el.text();
         }

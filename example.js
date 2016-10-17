@@ -61,7 +61,7 @@ co(function*() {
     ];
 
     const [response, body] = yield request('https://news.ycombinator.com/');
-    const htmlEvaluator = new HtmlEvaluator(body);
+    const htmlEvaluator = new HtmlEvaluator(cheerio.load(body));
     const res = htmlEvaluator.eval(transformations);
     console.log("result from evaluating pipeline:\n", res);
 }).catch(function(x) {
