@@ -10,7 +10,7 @@ const bb = require('bluebird');
 let request = require('request');
 request = bb.promisify(request, {multiArgs: true});
 
-const {required} = require('./transformations/control-flow');
+const {required, nth, exceptNth} = require('./transformations/control-flow');
 const curry = require('./transformations/utils').curry;
 const HtmlEvaluator = require('./lib').HtmlEvaluator;
 const NoValueError = require('./lib/error').NoValueError;
@@ -60,6 +60,12 @@ co(function*() {
     const head = (xs) => xs[0];
     head.manyToOne = true;
 
+    function log(x) {
+        console.log('logging:', x);
+        return x;
+    }
+    log.acceptsErrors = true;
+
 
     // -----------------------------------
     // Create pipeline and run
@@ -70,8 +76,10 @@ co(function*() {
         [toLowerCase, toUpperCase, toUpperCase],
         trim,
         // defaultValue("I am a default value"), // remove this to see stacktrace in action
-        join('\n'),
-        required
+        log,
+        // nth(2, defaultValue("hej")),
+        join('\n')
+        // required
     ];
 
     const [response, body] = yield request('https://news.ycombinator.com/');

@@ -14,16 +14,16 @@ const _ = require('lodash');
  * @returns {Function} - curried function. Has 'appliedArgs' property
  */
 function curry(fx) {
-    var arity = fx.length;
+    const arity = fx.length;
     function f1() {
         var args = Array.prototype.slice.call(arguments, 0);
         if (args.length >= arity) {
-            return fx.apply(null, args);
+            return fx.apply(this, args);
         }
         else {
             function f2() {
                 var args2 = Array.prototype.slice.call(arguments, 0);
-                return f1.apply(null, args.concat(args2));
+                return f1.apply(this, args.concat(args2));
             }
             f2.appliedArgs = args; // save arguments
             copyProps(f1, f2); // if properties are set AFTER curry() call
