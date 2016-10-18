@@ -9,9 +9,9 @@ const _ = require('lodash');
  * Creates a curried version of fx, like _.curry
  * Two important features, for function serialisation:
  * - Preserves the 'toString' method
- * - Keeps partially applied arguments in 'appliedArgs' array
+ * - Keeps partially applied arguments in 'args' array
  * @param {Function} fx - function to curry
- * @returns {Function} - curried function. Has 'appliedArgs' property
+ * @returns {Function} - curried function. Has 'args' property
  */
 function curry(fx) {
     const arity = fx.length;
@@ -25,18 +25,20 @@ function curry(fx) {
                 var args2 = Array.prototype.slice.call(arguments, 0);
                 return f1.apply(this, args.concat(args2));
             }
-            f2.appliedArgs = args; // save arguments
             copyProps(f1, f2); // if properties are set AFTER curry() call
             copyProps(fx, f2); // if properties are set BEFORE curry() call
             setToString(f2, fx + ''); // save original function string
+            Object.defineProperty(f2, 'length', {value: arity - args.length});
             Object.defineProperty(f2, 'name', {value: fx.name});
+            Object.defineProperty(f2, 'args', {value: args});
             return f2;
         }
     }
-    f1.appliedArgs = [];
     copyProps(fx, f1); // copy e.g. 'manyToOne'
     setToString(f1, fx + ''); // save original function string
+    Object.defineProperty(f1, 'length', {value: arity});
     Object.defineProperty(f1, 'name', {value: fx.name});
+    Object.defineProperty(f1, 'args', {value: []});
     return f1;
 }
 
