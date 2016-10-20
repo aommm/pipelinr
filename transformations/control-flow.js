@@ -1,3 +1,6 @@
+'use strict';
+
+const _ = require('lodash');
 
 const NoValueError = require('../lib/error').NoValueError;
 const RequiredError = require('../lib/error').RequiredError;
@@ -47,9 +50,25 @@ function exceptNth(n, fn, x, i) {
 exceptNth = curry(exceptNth);
 exceptNth.acceptsErrors = true;
 
+/**
+ * Calls the given functions one after another, passing the return value from one to the next
+ * Functions are always invoked with the previous functions return value and the original i value
+ * @param [Function[]] fns
+ * @param x - the first value
+ * @param i
+ * @returns {*}
+ */
+function flow(fns, x, i) {
+    for (const fn of fns) {
+        x = fn.call(this, x, i);
+    }
+    return x;
+}
+flow = curry(flow);
 
 module.exports = {
     required: required,
     nth: nth,
-    exceptNth: exceptNth
+    exceptNth: exceptNth,
+    flow: flow
 };

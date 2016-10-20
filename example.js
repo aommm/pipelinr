@@ -70,9 +70,9 @@ co(function*() {
     // -----------------------------------
     // Create pipeline and run
     const transformations = [
-        '.itemlist .athing:nth-child(1)',
+        ['.itemlist .athing:nth-child(1)',
         '.itemlist > tr:nth-child(2) > td:nth-child(2)',
-        'brokenSelector',
+        'brokenSelector'],
         [toLowerCase, toUpperCase, toUpperCase],
         trim,
         // defaultValue("I am a default value"), // remove this to see stacktrace in action
