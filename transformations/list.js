@@ -24,10 +24,16 @@ function flatten(xs) {
     return _.flatten(xs);
 }
 
+function drop(n, xs) {
+    return _.drop(n, xs);
+}
+drop = curry(drop);
+
 module.exports = {
     concat: concat,
     join: join,
     head: head,
     chunk: chunk,
-    flatten: flatten
+    flatten: flatten,
+    drop: drop
 };

@@ -63,6 +63,7 @@ function log(xs) {
     console.log('logging:', xs);
     return xs;
 }
+log.acceptsErrors = true;
 
 /**
  * Runs 'fn' on all arguments except the 'n'th. The nth is passed through as-is
