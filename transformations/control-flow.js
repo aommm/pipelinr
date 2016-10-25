@@ -16,6 +16,30 @@ function required(x) {
 }
 required.acceptsErrors = true;
 
+function defaultValue (def, x) {
+    return x instanceof NoValueError ? def : x;
+}
+defaultValue.acceptsErrors = true;
+defaultValue = curry(defaultValue);
+
+/**
+ * Applies a many-to-x transformation several times
+ * (useful when you want to transform nested arrays)
+ * @param fn - many-to-many or many-to-one transformation
+ * @param xs
+ * @param i
+ */
+function forAll(fn, xs, i) {
+    if (_.isArray(xs)) {
+        return xs.map((x, i) => this.tryOrUndefined.call(this, fn, x, i));
+    } else {
+        return new NoValueError();
+    }
+
+}
+forAll.acceptsErrors = true;
+forAll = curry(forAll);
+
 /**
  * Runs 'fn' on the 'n'th argument. Others are passed through as-is
  * @param {Number} n
@@ -34,6 +58,11 @@ function forNth(n, fn, xs, i) {
 }
 forNth = curry(forNth);
 forNth.acceptsErrors = true;
+
+function log(xs) {
+    console.log('logging:', xs);
+    return xs;
+}
 
 /**
  * Runs 'fn' on all arguments except the 'n'th. The nth is passed through as-is
@@ -70,6 +99,9 @@ flow = curry(flow);
 
 module.exports = {
     required: required,
+    defaultValue: defaultValue,
+    log: log,
+    forAll: forAll,
     forNth: forNth,
     exceptNth: exceptNth,
     flow: flow
