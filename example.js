@@ -10,7 +10,7 @@ const bb = require('bluebird');
 let request = require('request');
 request = bb.promisify(request, {multiArgs: true});
 
-const {required, nth, exceptNth} = require('./transformations/control-flow');
+const {required, forNth, exceptNth} = require('./transformations/control-flow');
 const get = require('./transformations/node').get;
 const nodeText = require('./transformations/node').nodeText;
 const nodeChildren = require('./transformations/node').nodeChildren;
@@ -52,16 +52,15 @@ co(function*() {
     // Many-to-one transformations ([a,b,c] -> d)
 
     const concat = (xs) => xs.join('');
-    concat.manyToOne = true;
 
     function join (sep, xs) { // Many-to-one AND generic
         return xs.join(sep);
     }
-    join.manyToOne = true;
     join = curry(join);
 
-    const head = (xs) => xs[0];
-    head.manyToOne = true;
+    function head(xs) {
+        return xs[0];
+    }
 
     function log(x) {
         console.log('logging:', x);
@@ -75,6 +74,10 @@ co(function*() {
     chunk.manyToMany = true;
     chunk = curry(chunk);
 
+    function flatten(xs) {
+        return _.flatten(xs);
+    }
+
 
     /**
      * Applies a many-to-x transformation several times
@@ -83,11 +86,17 @@ co(function*() {
      * @param xs
      * @param i
      */
-    function forEach(fn, xs, i) {
-        return xs.map((x) => fn(x, i));
+    function forAll(fn, xs, i) {
+        if (_.isArray(xs)) {
+            return xs.map((x, i) => this.tryOrUndefined.call(this, fn, x, i));
+        } else {
+            return new NoValueError();
+        }
+
     }
-    forEach.manyToMany = true;
-    forEach = curry(forEach);
+    forAll.manyToMany = true;
+    forAll.acceptsErrors = true;
+    forAll = curry(forAll);
 
     // -----------------------------------
     // Create pipeline and run
@@ -96,41 +105,46 @@ co(function*() {
         '.itemlist > tr:nth-child(2) > td:nth-child(2)',
         'brokenSelector'],
         [toLowerCase, toUpperCase, toUpperCase],
-        trim,
-        // defaultValue("I am a default value"), // remove this to see stacktrace in action
-        log,
-        nth(1, defaultValue("hej")),
-        // nth(2, defaultValue("hej")),
-        join('\n')
+        forAll(trim),
+        forAll(log),
+        forNth(2, defaultValue("hej")),
+        forAll(required),
+        join('\n'),
         // required
     ];
 
     const transformations2 = [
         get('#hnmain > tr:nth-child(3) > td > table'),
         nodeChildren,
-        head,
         chunk(3),
-        forEach(head),
-        nodeText,
-        trim
+        forAll(head),
+        flatten,
+        forAll(nodeText),
+        forAll(trim)
     ];
-    // const transformations3 = [
-    //     get('#hnmain > tr:nth-child(3) > td > table'),
-    //     nodeChildren,
-    //     head,
-    //     chunk(3),
-    //     head,
-    //     get('td:nth-child(1)'),
-    //     nodeText,
-    //
-    //     // forEach(head),
-    //     // nodeText,
-    //     // trim
-    // ];
+    const transformations3 = [
+        get('#hnmain > tr:nth-child(3) > td > table'),
+        nodeChildren,
+        chunk(3),
+        forAll(head),
+        flatten,
+        forAll(get('td:nth-child(3)')),
+        forAll(nodeText),
+
+        // forEach(head),
+        // nodeText,
+        // trim
+    ];
+
+    const transformations4 = [
+        _.constant([1,2,3]),
+        _.sum
+        // toLowerCase
+    ];
 
     const [response, body] = yield request('https://news.ycombinator.com/');
     const htmlEvaluator = new HtmlEvaluator(cheerio.load(body));
-    const res = htmlEvaluator.eval(transformations3);
+    const res = htmlEvaluator.eval(transformations4);
     console.log("result from evaluating pipeline:\n", res);
 }).catch(function(x) {
     console.error('err', x.stack);

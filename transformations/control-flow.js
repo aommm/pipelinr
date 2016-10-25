@@ -20,18 +20,20 @@ required.acceptsErrors = true;
  * Runs 'fn' on the 'n'th argument. Others are passed through as-is
  * @param {Number} n
  * @param {Function} fn
- * @param {*} x
+ * @param {*} xs
  * @param {Number} i
  * @returns {*}
  */
-function nth(n, fn, x, i) {
-    if (i === n) {
-        return fn.call(this, x, i);
-    }
-    return x;
+function forNth(n, fn, xs, i) {
+    return xs.map(function (x, i) {
+        if (i === n) {
+            return this.tryOrUndefined.call(this, fn, x, i);
+        }
+        return x;
+    }, this);
 }
-nth = curry(nth);
-nth.acceptsErrors = true;
+forNth = curry(forNth);
+forNth.acceptsErrors = true;
 
 /**
  * Runs 'fn' on all arguments except the 'n'th. The nth is passed through as-is
@@ -68,7 +70,7 @@ flow = curry(flow);
 
 module.exports = {
     required: required,
-    nth: nth,
+    forNth: forNth,
     exceptNth: exceptNth,
     flow: flow
 };

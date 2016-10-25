@@ -14,7 +14,6 @@ function get(path, el, i) {
 get = curry(get);
 
 function nodeText(el, i) {
-    console.log('el', el.text());
     return this.nodeText(el);
 }
 nodeText = curry(nodeText);
@@ -22,7 +21,6 @@ nodeText = curry(nodeText);
 function nodeChildren(el, i) {
     return this.nodeChildren(el);
 }
-nodeChildren.oneToMany = true;
 nodeChildren = curry(nodeChildren);
 
 module.exports = {
