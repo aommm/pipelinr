@@ -25,7 +25,7 @@ function flatten(xs) {
 }
 
 function drop(n, xs) {
-    return _.drop(n, xs);
+    return _.drop(xs, n);
 }
 drop = curry(drop);
 
