@@ -29,11 +29,16 @@ function drop(n, xs) {
 }
 drop = curry(drop);
 
+function toList(xs) {
+    return _.map(xs);
+}
+
 module.exports = {
     concat: concat,
     join: join,
     head: head,
     chunk: chunk,
     flatten: flatten,
-    drop: drop
+    drop: drop,
+    toList: toList
 };
