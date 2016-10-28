@@ -31,7 +31,7 @@ defaultValue = curry(defaultValue);
  */
 function forAll(fn, xs, i) {
     if (_.isArray(xs)) {
-        return xs.map((x, i) => this.tryOrUndefined.call(this, fn, x, i));
+        return xs.map((x, i) => this.evalOne.call(this, fn, x, i));
     } else {
         return new NoValueError();
     }
@@ -51,7 +51,7 @@ forAll = curry(forAll);
 function forNth(n, fn, xs, i) {
     return xs.map(function (x, i) {
         if (i === n) {
-            return this.tryOrUndefined.call(this, fn, x, i);
+            return this.evalOne.call(this, fn, x, i);
         }
         return x;
     }, this);
@@ -77,7 +77,7 @@ function exceptNth(n, fn, x, i) {
     if (i === n) {
         return x;
     }
-    return this.tryOrUndefined.call(this, fn, x, i);
+    return this.evalOne.call(this, fn, x, i);
 }
 exceptNth = curry(exceptNth);
 exceptNth.acceptsErrors = true;
@@ -92,7 +92,7 @@ exceptNth.acceptsErrors = true;
  */
 function flow(fns, x, i) {
     for (const fn of fns) {
-        x = this.tryOrUndefined.call(this, fn, x, i);
+        x = this.evalOne.call(this, fn, x, i);
     }
     return x;
 }
