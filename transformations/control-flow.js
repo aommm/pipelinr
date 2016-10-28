@@ -77,7 +77,7 @@ function exceptNth(n, fn, x, i) {
     if (i === n) {
         return x;
     }
-    return fn.call(this, x, i);
+    return this.tryOrUndefined.call(this, fn, x, i);
 }
 exceptNth = curry(exceptNth);
 exceptNth.acceptsErrors = true;
@@ -92,17 +92,17 @@ exceptNth.acceptsErrors = true;
  */
 function flow(fns, x, i) {
     for (const fn of fns) {
-        x = fn.call(this, x, i);
+        x = this.tryOrUndefined.call(this, fn, x, i);
     }
     return x;
 }
 flow = curry(flow);
 
 /**
- * Checks f(x), resulting in 'undefined' if it is false.
+ * Checks f(x), resulting in NoValueError if it is false.
  * @param {Function} f
  * @param {*} x
- * @returns {*|undefined}
+ * @returns {*|NoValueError}
  */
 function guard(f, x) {
     if (f(x)) {
