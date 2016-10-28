@@ -1,13 +1,14 @@
 {
   "name": "pipelinr",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Easily define data transformation pipelines and run them",
   "main": "index.js",
   "scripts": {
     "test": "mocha test/"
   },
-  "author": "niklas@niklaslogren.com",
+  "author": "Niklas Logren <niklas@niklaslogren.com> (http://niklaslogren.com)",
   "license": "ISC",
+  "repository": "aommm/pipelinr",
   "dependencies": {
     "bluebird": "^3.4.6",
     "cheerio": "^0.22.0",
