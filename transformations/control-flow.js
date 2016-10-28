@@ -98,6 +98,20 @@ function flow(fns, x, i) {
 }
 flow = curry(flow);
 
+/**
+ * Checks f(x), resulting in 'undefined' if it is false.
+ * @param {Function} f
+ * @param {*} x
+ * @returns {*|undefined}
+ */
+function guard(f, x) {
+    if (f(x)) {
+        return x;
+    }
+    return new NoValueError();
+}
+guard = curry(guard);
+
 module.exports = {
     required: required,
     defaultValue: defaultValue,
@@ -105,5 +119,6 @@ module.exports = {
     forAll: forAll,
     forNth: forNth,
     exceptNth: exceptNth,
-    flow: flow
+    flow: flow,
+    guard: guard
 };

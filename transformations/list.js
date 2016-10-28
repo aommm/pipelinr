@@ -32,6 +32,10 @@ drop = curry(drop);
 function toList(xs) {
     return _.map(xs);
 }
+function getNth(n, xs) {
+    return xs[n];
+}
+getNth = curry(getNth);
 
 module.exports = {
     concat: concat,
@@ -40,5 +44,6 @@ module.exports = {
     chunk: chunk,
     flatten: flatten,
     drop: drop,
-    toList: toList
+    toList: toList,
+    getNth: getNth
 };
