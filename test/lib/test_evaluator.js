@@ -8,7 +8,9 @@ const expect = chai.expect;
 require('co-mocha');
 
 const lib = require('../../lib');
+const error = require('../../lib/error');
 const Evaluator = lib.Evaluator;
+const NoValueError = error.NoValueError;
 
 describe('Evaluator', function () {
 
@@ -69,6 +71,96 @@ describe('Evaluator', function () {
             testEvaluator.eval('hello');
             expect(testEvaluator._validate.called).to.be.true;
         });
+
+        it('starts the flow with undefined', function () {
+            const fn = sinon.stub();
+            testEvaluator.eval([fn]);
+            expect(fn.called).to.be.true;
+            expect(fn.args[0]).to.deep.equal([undefined, 0]);
+        });
+        it('starts the flow with array of undefined', function () {
+            const fn1 = sinon.stub();
+            const fn2 = sinon.stub();
+            testEvaluator.eval([[fn1, fn2]]);
+            expect(fn1.called).to.be.true;
+            expect(fn1.args[0]).to.deep.equal([undefined, 0]);
+            expect(fn2.called).to.be.true;
+            expect(fn2.args[0]).to.deep.equal([undefined, 1]);
+        });
+
+        describe('passes returned values to next function', function () {
+            it('for single values', function () {
+                const fn1 = sinon.stub().returns(1);
+                const fn2 = sinon.stub();
+                Object.defineProperty(fn1, 'length', {value: 2});
+                Object.defineProperty(fn2, 'length', {value: 2});
+                testEvaluator.eval([fn1, fn2]);
+                expect(fn1.called).to.be.true;
+                expect(fn2.called).to.be.true;
+                expect(fn2.args[0][0]).to.deep.equal(1);
+            });
+            it('for arrays', function () {
+                const fn1 = sinon.stub();
+                const fn2 = sinon.stub();
+                const fn3 = sinon.stub();
+                Object.defineProperty(fn1, 'length', {value: 2});
+                Object.defineProperty(fn2, 'length', {value: 2});
+                Object.defineProperty(fn3, 'length', {value: 2});
+                testEvaluator.eval([
+                    () => [1,2,3],
+                    [fn1, fn2, fn3]
+                ]);
+                expect(fn1.called).to.be.true;
+                expect(fn2.called).to.be.true;
+                expect(fn1.args[0][0]).to.deep.equal(1);
+                expect(fn2.args[0][0]).to.deep.equal(2);
+                expect(fn3.args[0][0]).to.deep.equal(3);
+            });
+
+
+        });
+
+        it('results in "undefined" if transformation fails', function () {
+            function evilFn() {
+                const obj = 5;
+                return obj();
+            }
+            const result = testEvaluator.eval([evilFn]);
+            expect(result).to.be.undefined;
+        });
+
+        describe('always removes "NoValueError"s', function () {
+            it('from single value', function () {
+                const result = testEvaluator.eval([
+                    () => new NoValueError()
+                ]);
+                expect(result).to.be.undefined;
+            });
+            it('from array', function () {
+                const result = testEvaluator.eval([
+                    () => [new NoValueError(), "hej"]
+                ]);
+                expect(result).to.be.deep.equal([undefined, "hej"]);
+            });
+            it('from object', function () {
+                const obj = {a: new NoValueError(), b: "hej"};
+                const result = testEvaluator.eval([
+                    () => obj
+                ]);
+                expect(result).to.be.deep.equal({a: undefined, b: "hej"});
+            });
+            it('from object (with circular references)', function () {
+                const circularObj = {
+                    a: new NoValueError()
+                };
+                circularObj['b'] = circularObj;
+                const result = testEvaluator.eval([
+                    () => circularObj
+                ]);
+                expect(result).to.be.deep.equal({a: undefined, b: circularObj});
+            });
+        });
+
 
     })
 });
